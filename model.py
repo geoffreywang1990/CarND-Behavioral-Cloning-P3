@@ -1,5 +1,5 @@
 #edited from https://github.com/llSourcell/How_to_simulate_a_self_driving_car.git
-
+import csv
 import numpy as np #matrix math
 from sklearn.model_selection import train_test_split #to split out training and testing data 
 #keras is a high level wrapper on top of tensorflow (machine learning library)
@@ -35,9 +35,9 @@ def load_data(args):
     X = []
     y = []
     for line in lines:
-        centerImg = args.training_path + "IMG/" + line[0].split('/')[-1]
-        leftImg = args.training_path + "IMG/" + line[1].split('/')[-1]
-        rightImg = args.training_path + "IMG/" + line[2].split('/')[-1]
+        centerImg = "IMG/" + line[0].split('/')[-1]
+        leftImg =   "IMG/" + line[1].split('/')[-1]
+        rightImg =  "IMG/" + line[2].split('/')[-1]
         steering = float(line[3])
         #throttle = float(line[4])
         #brake = float(line[5])
@@ -46,7 +46,7 @@ def load_data(args):
         y.append(steering)
     #now we can split the data into a training (80), testing(20), and validation set
     #thanks scikit learn
-    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=args.test_size, random_state=0)
+    X_train, X_valid, y_train, y_valid = train_test_split(np.array(X), np.array(y), test_size=args.test_size, random_state=0)
     return X_train, X_valid, y_train, y_valid
 
 
@@ -119,11 +119,11 @@ def train_model(model, args, X_train, X_valid, y_train, y_valid):
     #For instance, this allows you to do real-time data augmentation on images on CPU in 
     #parallel to training your model on GPU.
     #so we reshape our data into their appropriate batches and train our model simulatenously
-    model.fit_generator(batch_generator(args.data_dir, X_train, y_train, args.batch_size, True),
+    model.fit_generator(batch_generator(args.training_path, X_train, y_train, args.batch_size, True),
                         args.samples_per_epoch,
                         args.nb_epoch,
                         max_q_size=1,
-                        validation_data=batch_generator(args.data_dir, X_valid, y_valid, args.batch_size, False),
+                        validation_data=batch_generator(args.training_path, X_valid, y_valid, args.batch_size, False),
                         nb_val_samples=len(X_valid),
                         callbacks=[checkpoint],
                         verbose=1)
@@ -142,7 +142,7 @@ def main():
     Load train/validation data set and train the model
     """
     parser = argparse.ArgumentParser(description='Behavioral Cloning Training Program')
-    parser.add_argument('-d', help='data directory',        dest='training_path',     type=str,   default='data')
+    parser.add_argument('-d', help='data directory',        dest='training_path',     type=str,   default='../training_data_img')
     parser.add_argument('-t', help='test size fraction',    dest='test_size',         type=float, default=0.2)
     parser.add_argument('-k', help='drop out probability',  dest='keep_prob',         type=float, default=0.5)
     parser.add_argument('-n', help='number of epochs',      dest='nb_epoch',          type=int,   default=10)
