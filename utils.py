@@ -1,4 +1,4 @@
-#downloaded from https://github.com/llSourcell/How_to_simulate_a_self_driving_car.git
+#modified from https://github.com/llSourcell/How_to_simulate_a_self_driving_car.git
 import cv2, os
 import numpy as np
 import matplotlib.image as mpimg
@@ -53,9 +53,9 @@ def choose_image(data_dir, center, left, right, steering_angle):
     """
     choice = np.random.choice(3)
     if choice == 0:
-        return load_image(data_dir, left), steering_angle + 0.2
+        return load_image(data_dir, left), steering_angle + 0.05
     elif choice == 1:
-        return load_image(data_dir, right), steering_angle - 0.2
+        return load_image(data_dir, right), steering_angle - 0.05
     return load_image(data_dir, center), steering_angle
 
 
@@ -75,7 +75,7 @@ def random_translate(image, steering_angle, range_x, range_y):
     """
     trans_x = range_x * (np.random.rand() - 0.5)
     trans_y = range_y * (np.random.rand() - 0.5)
-    steering_angle += trans_x * 0.002
+    steering_angle += trans_x * 0.0005
     trans_m = np.float32([[1, 0, trans_x], [0, 1, trans_y]])
     height, width = image.shape[:2]
     image = cv2.warpAffine(image, trans_m, (width, height))
