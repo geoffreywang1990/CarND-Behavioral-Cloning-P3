@@ -39,11 +39,11 @@ def load_data(args):
         leftImg =   "IMG/" + line[1].split('/')[-1]
         rightImg =  "IMG/" + line[2].split('/')[-1]
         steering = float(line[3])
-        #throttle = float(line[4])
+        throttle = float(line[4])
         #brake = float(line[5])
         #speed = float(line[6])
         X.append([centerImg, leftImg, rightImg])
-        y.append(steering)
+        y.append([steering,throttle])
     #now we can split the data into a training (80), testing(20), and validation set
     #thanks scikit learn
     X_train, X_valid, y_train, y_valid = train_test_split(np.array(X), np.array(y), test_size=args.test_size, random_state=0)
@@ -63,7 +63,7 @@ def build_model(args):
     Fully connected: neurons: 100, activation: ELU
     Fully connected: neurons: 50, activation: ELU
     Fully connected: neurons: 10, activation: ELU
-    Fully connected: neurons: 1 (output)
+    Fully connected: neurons: 2 (output,steering and throutle)
 
     # the convolution layers are meant to handle feature engineering
     the fully connected layer for predicting the steering angle.
@@ -82,7 +82,7 @@ def build_model(args):
     model.add(Dense(100, activation='elu'))
     model.add(Dense(50, activation='elu'))
     model.add(Dense(10, activation='elu'))
-    model.add(Dense(1))
+    model.add(Dense(2))
     model.summary()
 
     return model
