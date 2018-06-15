@@ -39,11 +39,11 @@ def load_data(args):
         leftImg =   "IMG/" + line[1].split('/')[-1]
         rightImg =  "IMG/" + line[2].split('/')[-1]
         steering = float(line[3])
-        throttle = float(line[4])
+        #throttle = float(line[4])
         #brake = float(line[5])
-        #speed = float(line[6])
+        speed = float(line[6])
         X.append([centerImg, leftImg, rightImg])
-        y.append([steering,throttle])
+        y.append([steering,speed])
     #now we can split the data into a training (80), testing(20), and validation set
     #thanks scikit learn
     X_train, X_valid, y_train, y_valid = train_test_split(np.array(X), np.array(y), test_size=args.test_size, random_state=0)

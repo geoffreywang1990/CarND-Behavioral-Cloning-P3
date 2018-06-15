@@ -51,11 +51,11 @@ def choose_image(data_dir, center, left, right, steering_angle):
     Randomly choose an image from the center, left or right, and adjust
     the steering angle.
     """
-    choice = np.random.choice(3)
-    if choice == 0:
-        return load_image(data_dir, left), steering_angle + 0.05
-    elif choice == 1:
-        return load_image(data_dir, right), steering_angle - 0.05
+    #choice = np.random.choice(3)
+    #if choice == 0:
+    #    return load_image(data_dir, left), steering_angle + 0.05
+    #elif choice == 1:
+    #    return load_image(data_dir, right), steering_angle - 0.05
     return load_image(data_dir, center), steering_angle
 
 
@@ -128,7 +128,7 @@ def augument(data_dir, center, left, right, steering_angle, range_x=100, range_y
     """
     image, steering_angle = choose_image(data_dir, center, left, right, steering_angle)
     image, steering_angle = random_flip(image, steering_angle)
-    image, steering_angle = random_translate(image, steering_angle, range_x, range_y)
+    #image, steering_angle = random_translate(image, steering_angle, range_x, range_y)
     image = random_shadow(image)
     image = random_brightness(image)
     return image, steering_angle
@@ -145,16 +145,16 @@ def batch_generator(data_dir, image_paths, controls, batch_size, is_training):
         for index in np.random.permutation(image_paths.shape[0]):
             center, left, right = image_paths[index]
             steering_angle = controls[index][0]
-            thruttle = controls[index][1]
+            speed = controls[index][1]
             # argumentation
-            if is_training and np.random.rand() < 0.3:
+            if is_training and np.random.rand() < 0.4:
                 image, steering_angle = augument(data_dir, center, left, right, steering_angle)
             else:
                 image = load_image(data_dir, center) 
             # add the image and steering angle to the batch
             images[i] = preprocess(image)
             control[i][0] = steering_angle
-            control[i][1] = thruttle
+            control[i][1] = speed
             i += 1
             if i == batch_size:
                 break
