@@ -20,7 +20,8 @@ import os
 
 #for debugging, allows for reproducible (deterministic) results 
 np.random.seed(0)
-
+def rad2degree(rad):
+    return rad * 180. / 3.14
 
 def load_data(args):
     """
@@ -38,7 +39,7 @@ def load_data(args):
         centerImg = "IMG/" + line[0].split('/')[-1]
         leftImg =   "IMG/" + line[1].split('/')[-1]
         rightImg =  "IMG/" + line[2].split('/')[-1]
-        steering = float(line[3])
+        steering = rad2degree(float(line[3]))
         #throttle = float(line[4])
         #brake = float(line[5])
         speed = float(line[6])
