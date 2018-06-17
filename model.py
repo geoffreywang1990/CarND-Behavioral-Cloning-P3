@@ -1,16 +1,20 @@
 #edited from https://github.com/llSourcell/How_to_simulate_a_self_driving_car.git
 import csv
+import tensorflow as tf
 import numpy as np #matrix math
 from sklearn.model_selection import train_test_split #to split out training and testing data 
 #keras is a high level wrapper on top of tensorflow (machine learning library)
 #The Sequential container is a linear stack of layers
 from keras.models import Sequential
 #popular optimization strategy that uses gradient descent 
-from keras.optimizers import Adam
+from keras.optimizers import SGD 
 #to save our model periodically as checkpoints for loading later
 from keras.callbacks import ModelCheckpoint
 #what types of layers do we want our model to have?
 from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten
+# using multi gpu
+from multi_gpu import make_parallel
+#from keras.utils.training_utils import multi_gpu_model
 #helper class to define input shape and generate training images given image paths & steering angles
 from utils import INPUT_SHAPE, batch_generator
 #for command line arguments
@@ -21,6 +25,8 @@ import os
 #for debugging, allows for reproducible (deterministic) results 
 np.random.seed(0)
 def rad2degree(rad):
+    #deg = rad * 180. / 3.14 
+    #print ("deg:{},rad:{}\n".format(ideg,rad))
     return rad * 180. / 3.14
 
 def load_data(args):
@@ -42,9 +48,10 @@ def load_data(args):
         steering = rad2degree(float(line[3]))
         #throttle = float(line[4])
         #brake = float(line[5])
-        speed = float(line[6])
+        #speed = float(line[6])
         X.append([centerImg, leftImg, rightImg])
-        y.append([steering,speed])
+        #y.append([steering,speed])
+        y.append(steering)
     #now we can split the data into a training (80), testing(20), and validation set
     #thanks scikit learn
     X_train, X_valid, y_train, y_valid = train_test_split(np.array(X), np.array(y), test_size=args.test_size, random_state=0)
@@ -83,7 +90,7 @@ def build_model(args):
     model.add(Dense(100, activation='elu'))
     model.add(Dense(50, activation='elu'))
     model.add(Dense(10, activation='elu'))
-    model.add(Dense(2))
+    model.add(Dense(1))
     model.summary()
 
     return model
@@ -112,7 +119,7 @@ def train_model(model, args, X_train, X_valid, y_train, y_valid):
     #divide by the number of them
     #that value is our mean squared error! this is what we want to minimize via
     #gradient descent
-    model.compile(loss='mean_squared_error', optimizer=Adam(lr=args.learning_rate))
+    model.compile(loss='mse', optimizer=SGD(lr=args.learning_rate,momentum =0.1), metrics=['accuracy'])
 
     #Fits the model on data generated batch-by-batch by a Python generator.
 
@@ -120,7 +127,7 @@ def train_model(model, args, X_train, X_valid, y_train, y_valid):
     #For instance, this allows you to do real-time data augmentation on images on CPU in 
     #parallel to training your model on GPU.
     #so we reshape our data into their appropriate batches and train our model simulatenously
-    model.fit_generator(batch_generator(args.training_path, X_train, y_train, args.batch_size, True),
+    model.fit_generator(batch_generator(args.training_path, X_train, y_train, args.batch_size , True),
                         args.samples_per_epoch,
                         args.nb_epoch,
                         max_q_size=1,
@@ -148,9 +155,9 @@ def main():
     parser.add_argument('-k', help='drop out probability',  dest='keep_prob',         type=float, default=0.5)
     parser.add_argument('-n', help='number of epochs',      dest='nb_epoch',          type=int,   default=40)
     parser.add_argument('-s', help='samples per epoch',     dest='samples_per_epoch', type=int,   default=20000)
-    parser.add_argument('-b', help='batch size',            dest='batch_size',        type=int,   default=80)
+    parser.add_argument('-b', help='batch size',            dest='batch_size',        type=int,   default=320)
     parser.add_argument('-o', help='save best models only', dest='save_best_only',    type=s2b,   default='true')
-    parser.add_argument('-l', help='learning rate',         dest='learning_rate',     type=float, default=5.0e-4)
+    parser.add_argument('-l', help='learning rate',         dest='learning_rate',     type=float, default=1.0e-3)
     args = parser.parse_args()
 
     #print parameters
@@ -164,7 +171,8 @@ def main():
     #load data
     data = load_data(args)
     #build model
-    model = build_model(args)
+    model = make_parallel(build_model(args),4)
+    #model = multi_gpu_model(model,gpus = 4)
     #train model on data, it saves as model.h5 
     train_model(model, args, *data)
 

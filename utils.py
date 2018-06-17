@@ -51,11 +51,11 @@ def choose_image(data_dir, center, left, right, steering_angle):
     Randomly choose an image from the center, left or right, and adjust
     the steering angle.
     """
-    #choice = np.random.choice(3)
-    #if choice == 0:
-    #    return load_image(data_dir, left), steering_angle + 0.05
-    #elif choice == 1:
-    #    return load_image(data_dir, right), steering_angle - 0.05
+    choice = np.random.choice(3)
+    if choice == 0:
+        return load_image(data_dir, left), steering_angle + 1.00
+    elif choice == 1:
+        return load_image(data_dir, right), steering_angle - 1.20
     return load_image(data_dir, center), steering_angle
 
 
@@ -139,13 +139,14 @@ def batch_generator(data_dir, image_paths, controls, batch_size, is_training):
     Generate training image give image paths and associated steering angles
     """
     images = np.empty([batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS])
-    control= np.empty([batch_size,2])
+    control= np.empty([batch_size])
+    #control= np.empty([batch_size,2])
     while True:
         i = 0
         for index in np.random.permutation(image_paths.shape[0]):
             center, left, right = image_paths[index]
-            steering_angle = controls[index][0]
-            speed = controls[index][1]
+            steering_angle = controls[index]
+            #speed = controls[index][1]
             # argumentation
             if is_training and np.random.rand() < 0.4:
                 image, steering_angle = augument(data_dir, center, left, right, steering_angle)
@@ -153,8 +154,8 @@ def batch_generator(data_dir, image_paths, controls, batch_size, is_training):
                 image = load_image(data_dir, center) 
             # add the image and steering angle to the batch
             images[i] = preprocess(image)
-            control[i][0] = steering_angle
-            control[i][1] = speed
+            control[i] = steering_angle
+            #control[i][1] = speed
             i += 1
             if i == batch_size:
                 break
