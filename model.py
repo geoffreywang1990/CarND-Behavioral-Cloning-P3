@@ -1,5 +1,6 @@
 #edited from https://github.com/llSourcell/How_to_simulate_a_self_driving_car.git
 import csv
+import pandas as pd
 import tensorflow as tf
 import numpy as np #matrix math
 from sklearn.model_selection import train_test_split #to split out training and testing data 
@@ -30,29 +31,35 @@ def load_data(args):
     Load training data and split it into training and validation set
     """
     #reads CSV file into a single dataframe variable
-    lines = []
-    with open(args.training_path + '/driving_log.csv') as inputF:
-        reader = csv.reader(inputF)
-        for line in reader:
-            lines.append(line)
-    X = []
-    y = []
-    for line in lines:
-        centerImg = "IMG/" + line[0].split('/')[-1]
-        leftImg =   "IMG/" + line[1].split('/')[-1]
-        rightImg =  "IMG/" + line[2].split('/')[-1]
-        steering = float(line[3])
-        #throttle = float(line[4])
-        #brake = float(line[5])
-        #speed = float(line[6])
-        X.append([centerImg, leftImg, rightImg])
-        #y.append([steering,speed])
-        y.append(steering)
-    #now we can split the data into a training (80), testing(20), and validation set
-    #thanks scikit learn
-    #print np.array(y)#.shape," " ,np.array(y).shape
-    X_train, X_valid, y_train, y_valid = train_test_split(np.array(X), np.array(y), test_size=args.test_size, random_state=0)
-    #print(y_train)
+#    lines = []
+#    with open(args.training_path + '/driving_log.csv') as inputF:
+#        reader = csv.reader(inputF)
+#        for line in reader:
+#            lines.append(line)
+#    X = []
+#    y = []
+#    for line in lines:
+#        centerImg = "IMG/" + line[0].split('/')[-1]
+#        leftImg =   "IMG/" + line[1].split('/')[-1]
+#        rightImg =  "IMG/" + line[2].split('/')[-1]
+#        steering = float(line[3])
+#        #throttle = float(line[4])
+#        #brake = float(line[5])
+#        #speed = float(line[6])
+#        X.append([centerImg, leftImg, rightImg])
+#        #y.append([steering,speed])
+#        y.append(steering)
+#    #now we can split the data into a training (80), testing(20), and validation set
+#    #thanks scikit learn
+#    #print np.array(y)#.shape," " ,np.array(y).shape
+#    X_train, X_valid, y_train, y_valid = train_test_split(np.array(X), np.array(y), test_size=args.test_size, random_state=0)
+#    #print(y_train)
+
+
+    data_df = pd.read_csv(os.path.join(os.getcwd(), args.training_path, 'driving_log.csv'), names=['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed'])
+    X = data_df[['center', 'left', 'right']].values
+    y = data_df['steering'].values
+    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=args.test_size, random_state=0)
     return X_train, X_valid, y_train, y_valid
 
 
@@ -114,7 +121,7 @@ def build_train_model(args, X_train, X_valid, y_train, y_valid):
     #divide by the number of them
     #that value is our mean squared error! this is what we want to minimize via
     #gradient descent
-    model.compile(loss='mse', optimizer=SGD(lr=args.learning_rate,momentum =0.1), metrics=['mae'])
+    model.compile(loss='mse', optimizer=SGD(lr=args.learning_rate,momentum =0.8, decay = 1e-6), metrics=['mae'])
 
     #Fits the model on data generated batch-by-batch by a Python generator.
     #The generator is run in parallel to the model, for efficiency. 
@@ -150,7 +157,7 @@ def main():
     parser.add_argument('-s', help='samples per epoch',     dest='samples_per_epoch', type=int,   default=20000)
     parser.add_argument('-b', help='batch size',            dest='batch_size',        type=int,   default=400)
     parser.add_argument('-o', help='save best models only', dest='save_best_only',    type=s2b,   default='true')
-    parser.add_argument('-l', help='learning rate',         dest='learning_rate',     type=float, default=1.0e-4)
+    parser.add_argument('-l', help='learning rate',         dest='learning_rate',     type=float, default=1.0e-2)
     args = parser.parse_args()
 
     #print parameters
