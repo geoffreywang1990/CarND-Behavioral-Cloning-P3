@@ -7,6 +7,10 @@ import matplotlib.image as mpimg
 IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS = 160, 320, 3
 INPUT_SHAPE = (IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS)
 
+def rad2degree(rad):
+    return rad * 180. / 3.14
+def degree2rad(degree):
+    return degree * 3.14 * 180
 
 def load_image(data_dir, image_file):
     """
@@ -127,6 +131,7 @@ def augument(data_dir, center, left, right, steering_angle, range_x=100, range_y
     (The steering angle is associated with the center image)
     """
     image, steering_angle = choose_image(data_dir, center, left, right, steering_angle)
+    image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     image, steering_angle = random_flip(image, steering_angle)
     #image, steering_angle = random_translate(image, steering_angle, range_x, range_y)
     image = random_shadow(image)

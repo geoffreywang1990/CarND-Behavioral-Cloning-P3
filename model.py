@@ -13,10 +13,10 @@ from keras.callbacks import ModelCheckpoint
 #what types of layers do we want our model to have?
 from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten
 # using multi gpu
-from multi_gpu import make_parallel
+#from multi_gpu import make_parallel
 #from keras.utils.training_utils import multi_gpu_model
 #helper class to define input shape and generate training images given image paths & steering angles
-from utils import INPUT_SHAPE, batch_generator
+from utils import INPUT_SHAPE, batch_generator,degree2rad,rad2degree
 #for command line arguments
 import argparse
 #for reading files
@@ -24,10 +24,6 @@ import os
 
 #for debugging, allows for reproducible (deterministic) results 
 np.random.seed(0)
-def rad2degree(rad):
-    #deg = rad * 180. / 3.14 
-    #print ("deg:{},rad:{}\n".format(ideg,rad))
-    return rad * 180. / 3.14
 
 def load_data(args):
     """
@@ -45,7 +41,7 @@ def load_data(args):
         centerImg = "IMG/" + line[0].split('/')[-1]
         leftImg =   "IMG/" + line[1].split('/')[-1]
         rightImg =  "IMG/" + line[2].split('/')[-1]
-        steering = rad2degree(float(line[3]))
+        steering = float(line[3])
         #throttle = float(line[4])
         #brake = float(line[5])
         #speed = float(line[6])
@@ -54,11 +50,13 @@ def load_data(args):
         y.append(steering)
     #now we can split the data into a training (80), testing(20), and validation set
     #thanks scikit learn
+    #print np.array(y)#.shape," " ,np.array(y).shape
     X_train, X_valid, y_train, y_valid = train_test_split(np.array(X), np.array(y), test_size=args.test_size, random_state=0)
+    #print(y_train)
     return X_train, X_valid, y_train, y_valid
 
 
-def build_model(args):
+def build_train_model(args, X_train, X_valid, y_train, y_valid):
     """
     NVIDIA model used
     Image normalization to avoid saturation and make gradients work better.
@@ -91,12 +89,9 @@ def build_model(args):
     model.add(Dense(50, activation='elu'))
     model.add(Dense(10, activation='elu'))
     model.add(Dense(1))
+    #model.add(Lambda(degree2rad, output_shape=[1]))
     model.summary()
 
-    return model
-
-
-def train_model(model, args, X_train, X_valid, y_train, y_valid):
     """
     Train the model
     """
@@ -109,7 +104,7 @@ def train_model(model, args, X_train, X_valid, y_train, y_valid):
     # inferred from the name of the monitored quantity.
     checkpoint = ModelCheckpoint('model-{epoch:03d}.h5',
                                  monitor='val_loss',
-                                 verbose=0,
+                                 verbose=1,
                                  save_best_only=args.save_best_only,
                                  mode='auto')
 
@@ -119,10 +114,9 @@ def train_model(model, args, X_train, X_valid, y_train, y_valid):
     #divide by the number of them
     #that value is our mean squared error! this is what we want to minimize via
     #gradient descent
-    model.compile(loss='mse', optimizer=SGD(lr=args.learning_rate,momentum =0.1), metrics=['accuracy'])
+    model.compile(loss='mse', optimizer=SGD(lr=args.learning_rate,momentum =0.1), metrics=['mae'])
 
     #Fits the model on data generated batch-by-batch by a Python generator.
-
     #The generator is run in parallel to the model, for efficiency. 
     #For instance, this allows you to do real-time data augmentation on images on CPU in 
     #parallel to training your model on GPU.
@@ -130,7 +124,6 @@ def train_model(model, args, X_train, X_valid, y_train, y_valid):
     model.fit_generator(batch_generator(args.training_path, X_train, y_train, args.batch_size , True),
                         args.samples_per_epoch,
                         args.nb_epoch,
-                        max_q_size=1,
                         validation_data=batch_generator(args.training_path, X_valid, y_valid, args.batch_size, False),
                         nb_val_samples=len(X_valid),
                         callbacks=[checkpoint],
@@ -155,9 +148,9 @@ def main():
     parser.add_argument('-k', help='drop out probability',  dest='keep_prob',         type=float, default=0.5)
     parser.add_argument('-n', help='number of epochs',      dest='nb_epoch',          type=int,   default=40)
     parser.add_argument('-s', help='samples per epoch',     dest='samples_per_epoch', type=int,   default=20000)
-    parser.add_argument('-b', help='batch size',            dest='batch_size',        type=int,   default=320)
+    parser.add_argument('-b', help='batch size',            dest='batch_size',        type=int,   default=400)
     parser.add_argument('-o', help='save best models only', dest='save_best_only',    type=s2b,   default='true')
-    parser.add_argument('-l', help='learning rate',         dest='learning_rate',     type=float, default=1.0e-3)
+    parser.add_argument('-l', help='learning rate',         dest='learning_rate',     type=float, default=1.0e-4)
     args = parser.parse_args()
 
     #print parameters
@@ -171,10 +164,10 @@ def main():
     #load data
     data = load_data(args)
     #build model
-    model = make_parallel(build_model(args),4)
+    #model = make_parallel(build_model(args),4)
     #model = multi_gpu_model(model,gpus = 4)
     #train model on data, it saves as model.h5 
-    train_model(model, args, *data)
+    build_train_model( args, *data)
 
 
 if __name__ == '__main__':
