@@ -3,7 +3,7 @@ import cv2, os
 import numpy as np
 import matplotlib.image as mpimg
 
-input_h,imput_w = 160,320
+input_h,input_w = 160,320
 IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS = 66, 200, 3
 INPUT_SHAPE = (IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS)
 
@@ -55,11 +55,11 @@ def choose_image(data_dir, center, left, right, steering_angle):
     Randomly choose an image from the center, left or right, and adjust
     the steering angle.
     """
-    #choice = np.random.choice(3)
-    #if choice == 0:
-    #    return load_image(data_dir, left), steering_angle + 0.002
-    #elif choice == 1:
-    #    return load_image(data_dir, right), steering_angle - 0.002
+    choice = np.random.choice(3)
+    if choice == 0:
+        return load_image(data_dir, left), steering_angle + 0.002
+    elif choice == 1:
+        return load_image(data_dir, right), steering_angle - 0.002
     return load_image(data_dir, center), steering_angle
 
 
