@@ -3,8 +3,8 @@ import cv2, os
 import numpy as np
 import matplotlib.image as mpimg
 
-
-IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS = 160, 320, 3
+input_h,imput_w = 160,320
+IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS = 66, 200, 3
 INPUT_SHAPE = (IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS)
 
 def rad2degree(rad):
@@ -92,9 +92,9 @@ def random_shadow(image):
     """
     # (x1, y1) and (x2, y2) forms a line
     # xm, ym gives all the locations of the image
-    x1, y1 = IMAGE_WIDTH * np.random.rand(), 0
-    x2, y2 = IMAGE_WIDTH * np.random.rand(), IMAGE_HEIGHT
-    xm, ym = np.mgrid[0:IMAGE_HEIGHT, 0:IMAGE_WIDTH]
+    x1, y1 = input_w* np.random.rand(), 0
+    x2, y2 = input_w* np.random.rand(),input_h 
+    xm, ym = np.mgrid[0:input_h, 0:input_w]
 
     # mathematically speaking, we want to set 1 below the line and zero otherwise
     # Our coordinate is up side down.  So, the above the line: 
@@ -131,7 +131,6 @@ def augument(data_dir, center, left, right, steering_angle, range_x=100, range_y
     (The steering angle is associated with the center image)
     """
     image, steering_angle = choose_image(data_dir, center, left, right, steering_angle)
-    image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     image, steering_angle = random_flip(image, steering_angle)
     #image, steering_angle = random_translate(image, steering_angle, range_x, range_y)
     image = random_shadow(image)
