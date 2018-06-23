@@ -1,10 +1,6 @@
 # **Behavioral Cloning** 
 
-## Writeup Template
-
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
----
+## Writeup 
 
 **Behavioral Cloning Project**
 
@@ -84,7 +80,7 @@ At the end of the process, the vehicle is able to drive autonomously around the 
 #### 2. Final Model Architecture
 
 Here is a summary of the architecture
-
+```
 Layer (type)                     Output Shape          Param #     Connected to                     
 ====================================================================================================
 lambda_1 (Lambda)                (None, 160, 320, 3)   0           lambda_input_1[0][0]             
@@ -111,7 +107,7 @@ dense_3 (Dense)                  (None, 10)            510         dense_2[0][0]
 ____________________________________________________________________________________________________
 dense_4 (Dense)                  (None, 1)             11          dense_3[0][0]                    
 ====================================================================================================
-
+```
 
 #### 3. Creation of the Training Set & Training Process
 
