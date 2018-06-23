@@ -1,39 +1,21 @@
-#parsing command line arguments
 import argparse
-#decoding camera images
 import base64
-#for frametimestamp saving
 from datetime import datetime
-#reading and writing files
 import os
-#high level file operations
 import shutil
-#matrix math
 import numpy as np
-#real-time server
 import socketio
-#concurrent networking 
 import eventlet
-#web server gateway interface
 import eventlet.wsgi
-#image manipulation
 from PIL import Image
-#web framework
 from flask import Flask
-#input output
 from io import BytesIO
-
-#load our saved model
 from keras.models import load_model
 
-#helper class
 import utils
-
-#initialize our server
+import cv2
 sio = socketio.Server()
-#our flask (web) app
 app = Flask(__name__)
-#init our model and image array as empty
 model = None
 prev_image_array = None
 
@@ -56,28 +38,23 @@ def telemetry(sid, data):
         speed = float(data["speed"])
         # The current image from the center camera of the car
         image = Image.open(BytesIO(base64.b64decode(data["image"])))
-        try:
-            image = np.asarray(image)       # from PIL image to numpy array
-#            image= cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            #image = utils.preprocess(image) # apply the preprocessing
-            image = np.array([image])       # the model expects 4D array
+        image_array = np.asarray(image)       # from PIL image to numpy array
+        image_array = np.array([image_array])       # the model expects 4D array
 
-            # predict the steering angle for the image
-            steering_angle = float(model.predict(image, batch_size=1))
-            # lower the throttle as the speed increases
-            # if the speed is above the current speed limit, we are on a downhill.
-            # make sure we slow down first and then go back to the original max speed.
-            global speed_limit
-            if speed > speed_limit:
-                speed_limit = MIN_SPEED  # slow down
-            else:
-                speed_limit = MAX_SPEED
-            throttle = 1.0 - steering_angle**2 - (speed/speed_limit)**2
+        # predict the steering angle for the image
+        steering_angle = float(model.predict(image_array, batch_size=1))
+        # lower the throttle as the speed increases
+        # if the speed is above the current speed limit, we are on a downhill.
+        # make sure we slow down first and then go back to the original max speed.
+        global speed_limit
+        if speed > speed_limit:
+            speed_limit = MIN_SPEED  # slow down
+        else:
+            speed_limit = MAX_SPEED
+        throttle = 1.0 - steering_angle**2 - (speed/speed_limit)**2
 
-            print('{} {} {}'.format(steering_angle, throttle, speed))
-            send_control(steering_angle, throttle)
-        except Exception as e:
-            print(e)
+        print('{} {} {}'.format(steering_angle, throttle, speed))
+        send_control(steering_angle, throttle)
 
         # save frame
         if args.image_folder != '':
