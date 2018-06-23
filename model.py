@@ -84,6 +84,7 @@ def build_train_model(args, X_train, X_valid, y_train, y_valid):
     ELU(Exponential linear unit) function takes care of the Vanishing gradient problem. 
     """
     model = Sequential()
+    model.add(Cropping2D(cropping=((60, 25), (0, 0)))
     model.add(Lambda(lambda x: x/127.5-1.0, input_shape=INPUT_SHAPE))
     model.add(Conv2D(24, 5, 5, activation='elu', subsample=(2, 2)))
     model.add(Conv2D(36, 5, 5, activation='elu', subsample=(2, 2)))
