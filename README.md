@@ -15,9 +15,9 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 
 [image2]: ./examples/center.jpg "center driving"
-[image3]: ./examples/recover1.png "Recovery Image"
-[image4]: ./examples/recover2.png "Recovery Image"
-[image5]: ./examples/recover3.png "Recovery Image"
+[image3]: ./examples/recover1.jpg "Recovery Image"
+[image4]: ./examples/recover2.jpg "Recovery Image"
+[image5]: ./examples/recover3.jpg "Recovery Image"
 
 
 ## Rubric Points
