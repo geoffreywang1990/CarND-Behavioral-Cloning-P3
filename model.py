@@ -4,15 +4,10 @@ import pandas as pd
 import tensorflow as tf
 import numpy as np #matrix math
 from sklearn.model_selection import train_test_split #to split out training and testing data 
-#keras is a high level wrapper on top of tensorflow (machine learning library)
-#The Sequential container is a linear stack of layers
 from keras.models import Sequential
-#popular optimization strategy that uses gradient descent 
 from keras.optimizers import SGD 
-#to save our model periodically as checkpoints for loading later
 from keras.callbacks import ModelCheckpoint
-#what types of layers do we want our model to have?
-from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten
+from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Cropping2D
 # using multi gpu
 #from multi_gpu import make_parallel
 #from keras.utils.training_utils import multi_gpu_model
@@ -84,8 +79,8 @@ def build_train_model(args, X_train, X_valid, y_train, y_valid):
     ELU(Exponential linear unit) function takes care of the Vanishing gradient problem. 
     """
     model = Sequential()
-    model.add(Cropping2D(cropping=((60, 25), (0, 0)))
     model.add(Lambda(lambda x: x/127.5-1.0, input_shape=INPUT_SHAPE))
+    model.add(Cropping2D(cropping=((60, 25), (0, 0))))
     model.add(Conv2D(24, 5, 5, activation='elu', subsample=(2, 2)))
     model.add(Conv2D(36, 5, 5, activation='elu', subsample=(2, 2)))
     model.add(Conv2D(48, 5, 5, activation='elu', subsample=(2, 2)))
