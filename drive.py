@@ -59,7 +59,7 @@ def telemetry(sid, data):
         try:
             image = np.asarray(image)       # from PIL image to numpy array
 #            image= cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            image = utils.preprocess(image) # apply the preprocessing
+            #image = utils.preprocess(image) # apply the preprocessing
             image = np.array([image])       # the model expects 4D array
 
             # predict the steering angle for the image

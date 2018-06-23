@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.image as mpimg
 
 input_h,input_w = 160,320
-IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS = 66, 200, 3
+IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS = 160, 320, 3
 INPUT_SHAPE = (IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS)
 
 def rad2degree(rad):
@@ -157,7 +157,7 @@ def batch_generator(data_dir, image_paths, controls, batch_size, is_training):
             else:
                 image = load_image(data_dir, center) 
             # add the image and steering angle to the batch
-            images[i] = preprocess(image)
+            #images[i] = preprocess(image)
             control[i] = steering_angle
             #control[i][1] = speed
             i += 1
